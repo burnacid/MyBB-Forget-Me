@@ -1,0 +1,22 @@
+# Ignore all MyBB files
+*
+
+# Add gitignore to repo
+!.gitignore
+
+# Exclude project files so mybb installation can be directly used as repository for quick testing
+inc/*
+
+!inc/plugins
+inc/plugins/*
+
+!inc/languages
+inc/languages/*
+!inc/languages/english
+inc/languages/english/*
+!inc/languages/english/admin/
+inc/languages/english/admin/*
+
+!inc/plugins/ForgetMe.php
+!inc/languages/english/forgetme.lang.php
+!inc/languages/english/admin/config_forgetme.lang.php
