@@ -31,14 +31,13 @@ $plugins->add_hook('usercp_start', 'forgetme_usercp_start');
 
 function forgetme_activate()
 {
-    global $db, $lang,$mybb;
+    global $db, $lang, $mybb;
 
     $templatearray = array(
         'usercp_nav_misc_removeaccount' => "<tbody style=\"{\$collapsed['usercpmisc_e']}\" id=\"usercpmisc_e\">
         <tr><td class=\"trow1 smalltext\"><a href=\"{\$fm_delete_account_url}\" class=\"usercp_nav_item usercp_nav_forgetme\">{\$lang->fm_delete_account}</a></td></tr>
         </tbody>",
-        "usercp"=>
-        "<html>
+        "usercp" => "<html>
         <head>
         <title>{\$mybb->settings['bbname']} - {\$lang->fm_delete_account}</title>
         {\$headerinclude}
@@ -69,7 +68,13 @@ function forgetme_activate()
         </form>
         {\$footer}
         </body>
-        </html>");
+        </html>",
+        "usercp_deleteaccount" => "			<strong style='color:red;'>{\$lang->fm_delete_alert}</strong>
+			<p>{\$lang->fm_removal_procedure}</p>
+
+			<input type='checkbox' name='fm_user_delete' value=1 /> {\$lang->yes_understand}
+			<input type='hidden' name='action' value='do_deleteaccount' />
+			<p><input type='submit' name='submit' value='Start deletion process' /></p>");
 
     $group = array('prefix' => $db->escape_string('forgetme'), 'title' => $db->
             escape_string('Forget Me'));
@@ -148,9 +153,9 @@ function forgetme_activate()
 
     require_once MYBB_ROOT . 'inc/adminfunctions_templates.php';
 
-    find_replace_templatesets('usercp_nav', '#' . preg_quote('{$usercpmenu}') .
-        '#', "{\$usercpmenu}\n{\$mybb->forgetme_usercp_nav_misc_removeaccount}");
-        
+    find_replace_templatesets('usercp_nav', '#' . preg_quote('{$usercpmenu}') . '#',
+        "{\$usercpmenu}\n{\$mybb->forgetme_usercp_nav_misc_removeaccount}");
+
     // Add stylesheet
     $tid = 1; // MyBB Master Style
     $name = "forgetme.css";
@@ -173,7 +178,8 @@ function forgetme_activate()
         );
     $dbstylesheet = array_map(array($db, 'escape_string'), $stylesheet);
     // Activate children, if present.
-    $db->update_query('themestylesheets', array('attachedto' => $dbstylesheet['attachedto']), "name='{$dbstylesheet['name']}'");
+    $db->update_query('themestylesheets', array('attachedto' => $dbstylesheet['attachedto']),
+        "name='{$dbstylesheet['name']}'");
     // Update or insert parent stylesheet.
     $query = $db->simple_select('themestylesheets', 'sid', "tid='{$tid}' AND cachefile='{$name}'");
     $sid = intval($db->fetch_field($query, 'sid'));
@@ -183,7 +189,8 @@ function forgetme_activate()
         $sid = $db->insert_query('themestylesheets', $dbstylesheet);
         $stylesheet['sid'] = intval($sid);
     }
-    require_once MYBB_ROOT . $mybb->config['admin_dir'] . '/inc/functions_themes.php';
+    require_once MYBB_ROOT . $mybb->config['admin_dir'] .
+        '/inc/functions_themes.php';
     if ($stylesheet) {
         cache_stylesheet($stylesheet['tid'], $stylesheet['cachefile'], $stylesheet['stylesheet']);
     }
@@ -219,7 +226,19 @@ function forgetme_usercp_start()
 
     if ($mybb->input['action'] == "deleteaccount") {
         add_breadcrumb($lang->fm_delete_account);
+        eval("\$forgetme_page = \"" . $templates->get("forgetme_usercp_deleteaccount") .
+            "\";");
 
+    }
+    
+    if ($mybb->input['action'] == "do_deleteaccount") {
+        add_breadcrumb($lang->fm_delete_account);
+        eval("\$forgetme_page = \"" . $templates->get("forgetme_usercp_deleteaccount") .
+            "\";");
+
+    }
+
+    if ($forgetme_page) {
         eval("\$forgetme_delete_account = \"" . $templates->get("forgetme_usercp") . "\";");
         output_page($forgetme_delete_account);
     }
